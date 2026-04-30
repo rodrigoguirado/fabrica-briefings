@@ -59,6 +59,20 @@ export default function OutrosBriefingsPage() {
 
   async function handleDelete(id: string, titulo: string) {
     if (!confirm(`Excluir briefing "${titulo}"? Esta ação não pode ser desfeita.`)) return;
+    const target = briefings.find(b => b.id === id);
+    // Registra a exclusão antes de remover (quem, o quê, quando)
+    if (target) {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      await supabase.from('deletion_log').insert({
+        table_name: 'outros_briefings',
+        record_id: id,
+        record_title: target.titulo,
+        deleted_by_id: user?.id ?? null,
+        deleted_by_email: user?.email ?? null,
+        snapshot: target,
+      });
+    }
     setBriefings(prev => prev.filter(b => b.id !== id));
     const { error } = await supabase.from('outros_briefings').delete().eq('id', id);
     if (error) {

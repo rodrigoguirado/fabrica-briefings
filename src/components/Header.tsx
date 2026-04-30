@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut } from 'lucide-react';
+import { History } from 'lucide-react';
 
 interface HeaderProps {
   userEmail?: string;
@@ -9,7 +9,7 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
-export function Header({ userEmail, activeTab = 'spots', onTabChange, onLogout }: HeaderProps) {
+export function Header({ userEmail, activeTab, onTabChange, onLogout }: HeaderProps) {
   return (
     <header className="bg-navy-900 border-b border-seazone-border sticky top-0 z-50">
       <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center justify-between">
@@ -48,6 +48,15 @@ export function Header({ userEmail, activeTab = 'spots', onTabChange, onLogout }
             >
               Outros Briefings
             </button>
+            <a
+              href="https://briefings-seazone.netlify.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm font-medium transition-colors text-seazone-muted hover:text-white"
+              title="Abrir histórico antigo (até abril/26) em nova aba"
+            >
+              Histórico até abril 26
+            </a>
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -56,6 +65,13 @@ export function Header({ userEmail, activeTab = 'spots', onTabChange, onLogout }
             Sincronizado
           </div>
           {userEmail && <span className="text-sm text-seazone-muted">{userEmail}</span>}
+          <a
+            href="/exclusoes"
+            className="text-seazone-muted hover:text-white transition-colors p-1.5 rounded-lg"
+            title="Log de exclusões"
+          >
+            <History className="w-4 h-4" />
+          </a>
           <button
             onClick={onLogout}
             className="text-seazone-muted hover:text-white transition-colors px-3 py-1.5 border border-seazone-border rounded-lg text-sm"

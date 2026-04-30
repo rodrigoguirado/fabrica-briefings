@@ -56,6 +56,20 @@ export default function DashboardPage() {
   }
 
   async function handleDelete(id: string) {
+    const target = briefings.find(b => b.id === id);
+    // Registra a exclusão antes de remover (quem, o quê, quando)
+    if (target) {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      await supabase.from('deletion_log').insert({
+        table_name: 'briefings',
+        record_id: id,
+        record_title: target.spot_name,
+        deleted_by_id: user?.id ?? null,
+        deleted_by_email: user?.email ?? null,
+        snapshot: target,
+      });
+    }
     // Optimistic remove
     setBriefings(prev => prev.filter(b => b.id !== id));
     const { error } = await supabase.from('briefings').delete().eq('id', id);
@@ -126,18 +140,6 @@ export default function DashboardPage() {
             onDelete={handleDelete}
           />
         )}
-
-        {/* Rodapé — botão Briefings antigos */}
-        <footer className="mt-12 pt-8 border-t border-seazone-border flex justify-center">
-          <a
-            href="https://briefings-seazone.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border border-seazone-border text-seazone-muted hover:text-white hover:border-white/40 hover:bg-white/5 transition-colors"
-          >
-            Briefings antigos
-          </a>
-        </footer>
       </main>
     </div>
   );
