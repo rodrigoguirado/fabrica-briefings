@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Save, Share2, ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { OutroBriefingView } from '@/components/OutroBriefingView';
+import { getOutrosShareUrl } from '@/lib/utils';
 import type { OutroBriefing } from '@/types/briefing';
 
 export default function OutroBriefingPage() {
@@ -87,7 +88,7 @@ export default function OutroBriefingPage() {
             )}
             <button
               onClick={() => {
-                const url = `${window.location.origin}/outros/share/${briefing.share_id}`;
+                const url = getOutrosShareUrl(briefing.share_id);
                 navigator.clipboard.writeText(url);
                 alert('Link copiado: ' + url);
               }}

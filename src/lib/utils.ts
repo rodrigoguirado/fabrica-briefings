@@ -23,9 +23,17 @@ export function formatDate(date: string | null | undefined): string {
   }).format(new Date(date));
 }
 
+function getPublicOrigin(): string {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl) return envUrl.replace(/\/$/, '');
+  if (typeof window !== 'undefined') return window.location.origin;
+  return '';
+}
+
 export function getShareUrl(shareId: string): string {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/share/${shareId}`;
-  }
-  return `/share/${shareId}`;
+  return `${getPublicOrigin()}/share/${shareId}`;
+}
+
+export function getOutrosShareUrl(shareId: string): string {
+  return `${getPublicOrigin()}/outros/share/${shareId}`;
 }

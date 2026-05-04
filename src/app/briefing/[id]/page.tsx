@@ -11,6 +11,7 @@ import { PontosFortesSection } from '@/components/sections/PontosFortesSection';
 import { DontsSection } from '@/components/sections/DontsSection';
 import { DosSection } from '@/components/sections/DosSection';
 import { PerfilHospedeSection } from '@/components/sections/PerfilHospedeSection';
+import { getShareUrl } from '@/lib/utils';
 import type { Briefing } from '@/types/briefing';
 
 type SectionKey = 'criativos' | 'financeiro' | 'pontos-fortes' | 'donts' | 'dos' | 'perfil-hospede';
@@ -217,7 +218,7 @@ export default function BriefingPage() {
               )}
               <button
                 onClick={() => {
-                  const url = `${window.location.origin}/share/${briefing.share_id}`;
+                  const url = getShareUrl(briefing.share_id);
                   navigator.clipboard.writeText(url);
                   alert('Link copiado: ' + url);
                 }}
