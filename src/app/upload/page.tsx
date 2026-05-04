@@ -1,13 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { parseDocx } from '@/lib/docx-parser';
+import { useUserRole } from '@/lib/useUserRole';
 
 export default function UploadPage() {
   const router = useRouter();
+  const { canEdit, loading: roleLoading } = useUserRole();
+  useEffect(() => {
+    if (!roleLoading && !canEdit) router.replace('/');
+  }, [roleLoading, canEdit, router]);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'parsing' | 'saving' | 'done' | 'error'>('idle');

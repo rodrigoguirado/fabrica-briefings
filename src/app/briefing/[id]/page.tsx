@@ -12,6 +12,7 @@ import { DontsSection } from '@/components/sections/DontsSection';
 import { DosSection } from '@/components/sections/DosSection';
 import { PerfilHospedeSection } from '@/components/sections/PerfilHospedeSection';
 import { getShareUrl } from '@/lib/utils';
+import { useUserRole } from '@/lib/useUserRole';
 import type { Briefing } from '@/types/briefing';
 
 type SectionKey = 'criativos' | 'financeiro' | 'pontos-fortes' | 'donts' | 'dos' | 'perfil-hospede';
@@ -34,6 +35,8 @@ export default function BriefingPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionKey>('criativos');
+  const { canEdit: roleCanEdit } = useUserRole();
+  const canEdit = isAuthenticated && roleCanEdit;
 
   useEffect(() => {
     loadBriefing();
@@ -118,22 +121,22 @@ export default function BriefingPage() {
       case 'criativos':
         return (
           <>
-            <OverviewSection briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />
+            <OverviewSection briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />
             <div className="mt-8">
-              <BriefingView briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />
+              <BriefingView briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />
             </div>
           </>
         );
       case 'financeiro':
-        return <FinanceiroSection briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />;
+        return <FinanceiroSection briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />;
       case 'pontos-fortes':
-        return <PontosFortesSection briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />;
+        return <PontosFortesSection briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />;
       case 'donts':
-        return <DontsSection briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />;
+        return <DontsSection briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />;
       case 'dos':
-        return <DosSection briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />;
+        return <DosSection briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />;
       case 'perfil-hospede':
-        return <PerfilHospedeSection briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />;
+        return <PerfilHospedeSection briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />;
       default:
         return null;
     }
@@ -206,7 +209,7 @@ export default function BriefingPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {isAuthenticated && (
+              {canEdit && (
                 <select
                   value={briefing.status === 'publicado' || briefing.status === 'aprovado' ? 'publicado' : 'em_revisao'}
                   onChange={e => handleUpdate({ status: e.target.value as Briefing['status'] })}
@@ -226,7 +229,7 @@ export default function BriefingPage() {
               >
                 <Share2 className="w-4 h-4" /> Compartilhar
               </button>
-              {isAuthenticated && hasChanges && (
+              {canEdit && hasChanges && (
                 <button
                   onClick={handleSave}
                   disabled={saving}

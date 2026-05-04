@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { StatsCards } from '@/components/StatsCards';
 import { BriefingTable } from '@/components/BriefingTable';
 import { supabase } from '@/lib/supabase';
+import { useUserRole } from '@/lib/useUserRole';
 import type { Briefing } from '@/types/briefing';
 
 export default function DashboardPage() {
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
+  const { canEdit } = useUserRole();
 
   useEffect(() => {
     loadBriefings();
@@ -124,10 +126,12 @@ export default function DashboardPage() {
             <option value="em_revisao">Em produção</option>
             <option value="publicado">Finalizado</option>
           </select>
-          <button onClick={() => router.push('/upload')}
-            className="bg-accent hover:bg-accent/90 text-white font-medium text-sm px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap">
-            <Plus className="w-4 h-4" /> Novo Spot
-          </button>
+          {canEdit && (
+            <button onClick={() => router.push('/upload')}
+              className="bg-accent hover:bg-accent/90 text-white font-medium text-sm px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap">
+              <Plus className="w-4 h-4" /> Novo Spot
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -136,8 +140,8 @@ export default function DashboardPage() {
           <BriefingTable
             briefings={filtered}
             onOpenBriefing={id => router.push(`/briefing/${id}`)}
-            onStatusChange={handleStatusChange}
-            onDelete={handleDelete}
+            onStatusChange={canEdit ? handleStatusChange : undefined}
+            onDelete={canEdit ? handleDelete : undefined}
           />
         )}
       </main>

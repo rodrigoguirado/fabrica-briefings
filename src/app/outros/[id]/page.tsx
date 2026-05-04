@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2, Save, Share2, ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { OutroBriefingView } from '@/components/OutroBriefingView';
 import { getOutrosShareUrl } from '@/lib/utils';
+import { useUserRole } from '@/lib/useUserRole';
 import type { OutroBriefing } from '@/types/briefing';
 
 export default function OutroBriefingPage() {
@@ -16,6 +17,8 @@ export default function OutroBriefingPage() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { canEdit: roleCanEdit } = useUserRole();
+  const canEdit = isAuthenticated && roleCanEdit;
 
   useEffect(() => {
     load();
@@ -76,7 +79,7 @@ export default function OutroBriefingPage() {
             <h1 className="text-lg font-bold text-[#00143D] truncate">{briefing.titulo}</h1>
           </div>
           <div className="flex items-center gap-3">
-            {isAuthenticated && (
+            {canEdit && (
               <select
                 value={briefing.status}
                 onChange={e => handleUpdate({ status: e.target.value as OutroBriefing['status'] })}
@@ -96,7 +99,7 @@ export default function OutroBriefingPage() {
             >
               <Share2 className="w-4 h-4" /> Compartilhar
             </button>
-            {isAuthenticated && hasChanges && (
+            {canEdit && hasChanges && (
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -111,7 +114,7 @@ export default function OutroBriefingPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8">
-        <OutroBriefingView briefing={briefing} editable={isAuthenticated} onUpdate={handleUpdate} />
+        <OutroBriefingView briefing={briefing} editable={canEdit} onUpdate={handleUpdate} />
       </main>
     </div>
   );

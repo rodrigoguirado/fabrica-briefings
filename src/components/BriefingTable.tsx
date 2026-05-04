@@ -117,6 +117,8 @@ function GroupRow({
 
   const uiKey = toUiStatusKey(b.status);
   const uiStatusConfig = UI_STATUSES.find(s => s.key === uiKey)!;
+  const canEditStatus = !!onStatusChange;
+  const canDelete = !!onDelete;
 
   async function handleStatusChange(newKey: 'em_revisao' | 'publicado') {
     if (newKey === uiKey) return;
@@ -164,19 +166,25 @@ function GroupRow({
 
         {/* Status editável via dropdown */}
         <td className="px-4 py-3">
-          <div className="relative inline-block">
-            <select
-              value={uiKey}
-              onChange={(e) => handleStatusChange(e.target.value as 'em_revisao' | 'publicado')}
-              className={`appearance-none cursor-pointer text-xs font-medium pl-2.5 pr-7 py-1 rounded-full border ${uiStatusConfig.className} focus:outline-none focus:ring-2 focus:ring-accent`}
-              title="Alterar status"
-            >
-              {UI_STATUSES.map(s => (
-                <option key={s.key} value={s.key} className="bg-seazone-card text-seazone-text">{s.label}</option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-70">▾</span>
-          </div>
+          {canEditStatus ? (
+            <div className="relative inline-block">
+              <select
+                value={uiKey}
+                onChange={(e) => handleStatusChange(e.target.value as 'em_revisao' | 'publicado')}
+                className={`appearance-none cursor-pointer text-xs font-medium pl-2.5 pr-7 py-1 rounded-full border ${uiStatusConfig.className} focus:outline-none focus:ring-2 focus:ring-accent`}
+                title="Alterar status"
+              >
+                {UI_STATUSES.map(s => (
+                  <option key={s.key} value={s.key} className="bg-seazone-card text-seazone-text">{s.label}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-70">▾</span>
+            </div>
+          ) : (
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${uiStatusConfig.className}`}>
+              {uiStatusConfig.label}
+            </span>
+          )}
         </td>
 
         {/* Histórico */}
@@ -221,19 +229,21 @@ function GroupRow({
 
         {/* Excluir */}
         <td className="px-4 py-3">
-          <button
-            onClick={handleDeleteClick}
-            onMouseLeave={() => { if (deleteStep === 1) setDeleteStep(0); }}
-            disabled={deleteStep === 2}
-            title={deleteStep === 0 ? 'Excluir' : deleteStep === 1 ? 'Clique novamente para confirmar' : 'Excluindo...'}
-            className={`p-2 rounded-lg transition-colors ${
-              deleteStep === 1
-                ? 'bg-accent/20 text-accent ring-2 ring-accent'
-                : 'text-seazone-muted hover:text-accent hover:bg-accent/10'
-            } disabled:opacity-50`}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {canDelete && (
+            <button
+              onClick={handleDeleteClick}
+              onMouseLeave={() => { if (deleteStep === 1) setDeleteStep(0); }}
+              disabled={deleteStep === 2}
+              title={deleteStep === 0 ? 'Excluir' : deleteStep === 1 ? 'Clique novamente para confirmar' : 'Excluindo...'}
+              className={`p-2 rounded-lg transition-colors ${
+                deleteStep === 1
+                  ? 'bg-accent/20 text-accent ring-2 ring-accent'
+                  : 'text-seazone-muted hover:text-accent hover:bg-accent/10'
+              } disabled:opacity-50`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </td>
       </tr>
     </>
@@ -282,20 +292,22 @@ function HistoryItem({
         </div>
         <ExternalLink className="w-3.5 h-3.5 text-accent flex-shrink-0" />
       </button>
-      <button
-        type="button"
-        onClick={handleDeleteClick}
-        onMouseLeave={() => { if (deleteStep === 1) setDeleteStep(0); }}
-        disabled={deleteStep === 2}
-        title={deleteStep === 0 ? 'Excluir do histórico' : deleteStep === 1 ? 'Clique novamente para confirmar' : 'Excluindo...'}
-        className={`p-1.5 rounded-md transition-colors flex-shrink-0 ${
-          deleteStep === 1
-            ? 'bg-accent/20 text-accent ring-2 ring-accent'
-            : 'text-seazone-muted/70 hover:text-accent hover:bg-accent/10'
-        } disabled:opacity-50`}
-      >
-        <Trash2 className="w-3.5 h-3.5" />
-      </button>
+      {onDelete && (
+        <button
+          type="button"
+          onClick={handleDeleteClick}
+          onMouseLeave={() => { if (deleteStep === 1) setDeleteStep(0); }}
+          disabled={deleteStep === 2}
+          title={deleteStep === 0 ? 'Excluir do histórico' : deleteStep === 1 ? 'Clique novamente para confirmar' : 'Excluindo...'}
+          className={`p-1.5 rounded-md transition-colors flex-shrink-0 ${
+            deleteStep === 1
+              ? 'bg-accent/20 text-accent ring-2 ring-accent'
+              : 'text-seazone-muted/70 hover:text-accent hover:bg-accent/10'
+          } disabled:opacity-50`}
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      )}
     </li>
   );
 }

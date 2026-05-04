@@ -4,9 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useUserRole } from '@/lib/useUserRole';
 
 export default function NovoOutroBriefingPage() {
   const router = useRouter();
+  const { canEdit, loading: roleLoading } = useUserRole();
+  useEffect(() => {
+    if (!roleLoading && !canEdit) router.replace('/outros');
+  }, [roleLoading, canEdit, router]);
   const [vertical, setVertical] = useState<'szi' | 'marketplace'>('szi');
   const [titulo, setTitulo] = useState('');
   const [spotName, setSpotName] = useState('');

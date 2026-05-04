@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Plus, ExternalLink, Trash2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { supabase } from '@/lib/supabase';
+import { useUserRole } from '@/lib/useUserRole';
 import type { OutroBriefing } from '@/types/briefing';
 import { formatDate } from '@/lib/utils';
 
@@ -21,6 +22,7 @@ export default function OutrosBriefingsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
+  const { canEdit } = useUserRole();
 
   useEffect(() => {
     loadBriefings();
@@ -128,10 +130,12 @@ export default function OutrosBriefingsPage() {
             <option value="em_revisao">Em produção</option>
             <option value="publicado">Finalizado</option>
           </select>
-          <button onClick={() => router.push('/outros/novo')}
-            className="bg-accent hover:bg-accent/90 text-white font-medium text-sm px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap">
-            <Plus className="w-4 h-4" /> Novo Briefing
-          </button>
+          {canEdit && (
+            <button onClick={() => router.push('/outros/novo')}
+              className="bg-accent hover:bg-accent/90 text-white font-medium text-sm px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap">
+              <Plus className="w-4 h-4" /> Novo Briefing
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -169,27 +173,39 @@ export default function OutrosBriefingsPage() {
                         </button>
                       </td>
                       <td className="px-4 py-3">
-                        <select
-                          value={b.status}
-                          onChange={(e) => handleStatusChange(b.id, e.target.value as 'em_revisao' | 'publicado')}
-                          className={`appearance-none cursor-pointer text-xs font-medium pl-2.5 pr-7 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-accent ${
+                        {canEdit ? (
+                          <select
+                            value={b.status}
+                            onChange={(e) => handleStatusChange(b.id, e.target.value as 'em_revisao' | 'publicado')}
+                            className={`appearance-none cursor-pointer text-xs font-medium pl-2.5 pr-7 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-accent ${
+                              b.status === 'publicado'
+                                ? 'bg-green-500/20 text-green-400 border-green-500/40'
+                                : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+                            }`}
+                          >
+                            <option value="em_revisao" className="bg-seazone-card text-seazone-text">Em produção</option>
+                            <option value="publicado" className="bg-seazone-card text-seazone-text">Finalizado</option>
+                          </select>
+                        ) : (
+                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
                             b.status === 'publicado'
                               ? 'bg-green-500/20 text-green-400 border-green-500/40'
                               : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
-                          }`}
-                        >
-                          <option value="em_revisao" className="bg-seazone-card text-seazone-text">Em produção</option>
-                          <option value="publicado" className="bg-seazone-card text-seazone-text">Finalizado</option>
-                        </select>
+                          }`}>
+                            {b.status === 'publicado' ? 'Finalizado' : 'Em produção'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleDelete(b.id, b.titulo)}
-                          className="text-seazone-muted hover:text-accent hover:bg-accent/10 p-2 rounded-lg transition-colors"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {canEdit && (
+                          <button
+                            onClick={() => handleDelete(b.id, b.titulo)}
+                            className="text-seazone-muted hover:text-accent hover:bg-accent/10 p-2 rounded-lg transition-colors"
+                            title="Excluir"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
