@@ -232,6 +232,9 @@ export interface OutroBriefing {
   link_referencia: string | null;
   data_entrega: string | null;
   referencia_media: BriefingMedia[];
+  is_legacy?: boolean;
+  legacy_content?: Record<string, any> | null;
+  legacy_source_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -268,6 +271,9 @@ export interface Briefing {
   media_disruptivo_apresentadora: BriefingMedia[];
   media_disruptivo_narrado: BriefingMedia[];
   original_docx_url: string | null;
+  is_legacy?: boolean;
+  legacy_content?: Record<string, any> | null;
+  legacy_source_url?: string | null;
   created_at: string;
   updated_at: string;
 }
