@@ -447,22 +447,31 @@ function splitByHeaders(html: string): string[] {
 }
 
 function parseStructures(html: string): CreativeStructure[] {
-  const structures: CreativeStructure[] = [];
+  // Match the bold "ESTRUTURA N" heading produced by the briefing generator.
+  // Mammoth wraps these in <strong>...</strong>, while AB-test labels become
+  // <h2>Testes A/B — Estrutura N</h2> and textual references (e.g. "Inverte
+  // a Estrutura 1") stay inside <p>. Anchoring on <strong> is the only way
+  // to distinguish a real heading from these look-alikes.
+  const estruturaRegex = /<strong>\s*(?:ESTRUTURA|Estrutura)\s*\d+\s*<\/strong>/gi;
+  let parts = html.split(estruturaRegex);
 
-  // Match real structure headings only. Reject the AB-tests label
-  // "Testes A/B — Estrutura N" (where "Estrutura" follows a dash + space)
-  // which would otherwise create phantom empty structures.
-  const estruturaRegex = /(?<![—–-]\s)(?:ESTRUTURA|Estrutura)\s*\d+/g;
-  const parts = html.split(estruturaRegex);
-
-  // Skip the first part (before first ESTRUTURA)
-  for (let i = 1; i < parts.length; i++) {
-    const part = parts[i];
-    const structure = parseOneStructure(part);
-    if (structure) structures.push(structure);
+  // Legacy / non-standard docs may not wrap headings in <strong>. Fall back
+  // to a plain-text split, still excluding the "— Estrutura N" AB label form.
+  if (parts.length === 1) {
+    parts = html.split(/(?<![—–-]\s)(?:ESTRUTURA|Estrutura)\s*\d+/g);
   }
 
-  // If no ESTRUTURA labels found, try to parse the whole thing as one structure
+  const structures: CreativeStructure[] = [];
+  // Skip the first part (before first heading)
+  for (let i = 1; i < parts.length; i++) {
+    const structure = parseOneStructure(parts[i]);
+    // Defense in depth: drop phantom structures with no variations.
+    if (structure && structure.variations.length > 0) {
+      structures.push(structure);
+    }
+  }
+
+  // If still nothing, try to parse the whole html as a single structure
   if (structures.length === 0) {
     const structure = parseOneStructure(html);
     if (structure && structure.variations.length > 0) {
