@@ -449,8 +449,10 @@ function splitByHeaders(html: string): string[] {
 function parseStructures(html: string): CreativeStructure[] {
   const structures: CreativeStructure[] = [];
 
-  // Split by "ESTRUTURA" labels
-  const estruturaRegex = /ESTRUTURA\s*\d+/gi;
+  // Match real structure headings only. Reject the AB-tests label
+  // "Testes A/B — Estrutura N" (where "Estrutura" follows a dash + space)
+  // which would otherwise create phantom empty structures.
+  const estruturaRegex = /(?<![—–-]\s)(?:ESTRUTURA|Estrutura)\s*\d+/g;
   const parts = html.split(estruturaRegex);
 
   // Skip the first part (before first ESTRUTURA)
@@ -698,14 +700,33 @@ function parseLegends(html: string): Legend[] {
 function extractPontosFromText(text: string): string[] {
   const validPontos = ['C', 'L', 'D', 'Re', 'T', 'Pa', 'F', 'M', 'E', 'Va', 'Pe', 'Em', 'Ro', 'V'];
   const found: string[] = [];
+  const push = (raw: string) => {
+    const p = raw.trim();
+    if (validPontos.includes(p) && !found.includes(p)) found.push(p);
+  };
 
-  // Look for patterns like "L | D | Re | T" or badge-style inline text
+  // 1) Variation-level / "Pontos fortes:" line uses pipes: "L | Re | Va | T"
   const pipeMatch = text.match(/(?:Pontos fortes[:\s]*)?([A-Z][a-z]?(?:\s*\|\s*[A-Z][a-z]?)+)/);
   if (pipeMatch) {
-    const parts = pipeMatch[1].split('|').map(s => s.trim());
-    for (const p of parts) {
-      if (validPontos.includes(p) && !found.includes(p)) {
-        found.push(p);
+    pipeMatch[1].split('|').forEach(push);
+  }
+
+  // 2) Structure-level row is a single paragraph with siglas separated by
+  // multiple spaces or tabs: "L    D    Pa    Va    Re    T". After mammoth
+  // it's a <p>…</p>. Strip HTML to plain text first, then look for a line
+  // composed exclusively of valid siglas + whitespace.
+  if (found.length === 0) {
+    const plain = text
+      .replace(/<(br|\/p|\/h[1-6]|\/div|\/li|\/tr|\/td)\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&');
+    const lines = plain.split('\n');
+    const siglaRe = new RegExp(`^\\s*(?:${validPontos.join('|')})(?:[\\s\\t]+(?:${validPontos.join('|')}))+\\s*$`);
+    for (const line of lines) {
+      if (siglaRe.test(line)) {
+        line.trim().split(/\s+/).forEach(push);
+        if (found.length > 0) break;
       }
     }
   }

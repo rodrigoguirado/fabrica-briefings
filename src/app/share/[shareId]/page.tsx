@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { BriefingView } from '@/components/BriefingView';
+import { LegacyJsonView } from '@/components/LegacyJsonView';
+import { LegacyHtmlTabsView } from '@/components/LegacyHtmlTabsView';
+import { BriefingSidebarLayout } from '@/components/BriefingSidebarLayout';
 import type { Briefing } from '@/types/briefing';
 
 export default function SharePage() {
@@ -47,30 +49,35 @@ export default function SharePage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Minimal header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-xl font-bold text-navy-900">
-            sea<span className="text-accent">zone</span>
-          </div>
-          <p className="text-sm text-gray-400">Briefing de Criativos</p>
-        </div>
-      </header>
-
-      {/* Read-only briefing */}
-      <main className="py-6 px-4">
-        <BriefingView
-          briefing={briefing}
-          editable={false}
+  if (briefing.is_legacy && briefing.legacy_content) {
+    if (briefing.legacy_content.__html_tabs) {
+      return (
+        <LegacyHtmlTabsView
+          title={briefing.spot_name}
+          htmlTabs={briefing.legacy_content.__html_tabs}
+          headCss={briefing.legacy_content.__head_css}
+          sourceUrl={briefing.legacy_source_url}
+          backHref="/"
+          publicView
         />
-      </main>
+      );
+    }
+    return (
+      <LegacyJsonView
+        title={briefing.spot_name}
+        content={briefing.legacy_content}
+        sourceUrl={briefing.legacy_source_url}
+        backHref="/"
+        publicView
+      />
+    );
+  }
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-6 text-center text-xs text-gray-400">
-        Seazone — Marketplace de imóveis de temporada
-      </footer>
-    </div>
+  return (
+    <BriefingSidebarLayout
+      briefing={briefing}
+      editable={false}
+      publicView
+    />
   );
 }
